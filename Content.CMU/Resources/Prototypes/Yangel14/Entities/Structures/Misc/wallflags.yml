@@ -1,0 +1,136 @@
+- type: entity
+  parent: BaseSign
+  id: Yangel14WallFlagBase
+  abstract: true
+  components:
+  - type: WallMount
+    arc: 360
+  - type: Sprite
+    drawdepth: WallTops
+    sprite: Yangel14/Structures/wallflags.rsi
+    snapCardinals: true
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 100000
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          path: /Audio/Effects/poster_broken.ogg
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          PosterBroken:
+            min: 1
+            max: 1
+        offset: 0
+        
+  - type: entity
+  parent: Yangel14WallFlagBase
+  id: Yangel14WallFlagUEG
+  name: "UEG Flag"
+  description: "The flag of the United Earth Government."
+  components:
+  - type: Sprite
+    state: uegflag
+
+- type: entity
+  parent: Yangel14WallFlagBase
+  id: Yangel14WallFlagUEGWorn
+  name: "Worn UEG Flag"
+  description: "The flag of the United Erth Government. This one has seen better days."
+  components:
+  - type: Sprite
+    state: uegflag_worn
+
+- type: entity
+  parent: Yangel14WallFlagBase
+  id: Yangel14WallFlagCKC
+  name: "CKC Flag"
+  description: "The flag of the Central Kseebouian Confederation."
+  components:
+  - type: Sprite
+    state: ckcflag
+
+- type: entity
+  parent: Yangel14WallFlagBase
+  id: Yangel14WallFlagCKCWorn
+  name: "Worn CKC Flag"
+  description: "The flag of the Central Kseebouian Confederation. This one has seen better days."
+  components:
+  - type: Sprite
+    state: ckcflag_worn
+
+- type: entity
+  parent: Yangel14WallFlagBase
+  id: Yangel14WallFlagCMC
+  name: "CMC Flag"
+  description: "The flag of the UEG's Colonial Marines Coprs."
+  components:
+  - type: Sprite
+    state: cmcflag
+
+- type: entity
+  parent: Yangel14WallFlagBase
+  id: Yangel14WallFlagCMCWorn
+  name: "Worn CMC Flag"
+  description: "The flag of the UEG's Colonial Marines Coprs. This one has seen better days."
+  components:
+  - type: Sprite
+    state: cmcflag_worn
+
+- type: entity
+  parent: Yangel14WallFlagBase
+  id: Yangel14WallFlagMirtan
+  name: "Mirtan's Empire Flag"
+  description: "The flag of the Mirtan's Empire."
+  components:
+  - type: Sprite
+    state: mirtanflag
+
+- type: entity
+  parent: Yangel14WallFlagBase
+  id: Yangel14WallFlagMirtanWorn
+  name: "Worn ME Flag"
+  description: "The flag of the Mirtan's Empire. This one has seen better days."
+  components:
+  - type: Sprite
+    state: mirtanflag_worn
+
+- type: entity
+  parent: Yangel14WallFlagBase
+  id: Yangel14WallFlagUSSP
+  name: "USSP Flag"
+  description: "The flag of the Union of Soviet Socialistic Planets."
+  components:
+  - type: Sprite
+    state: usspflag
+
+- type: entity
+  parent: Yangel14WallFlagBase
+  id: Yangel14WallFlagUSSPWorn
+  name: "Worn USSP Flag"
+  description: "The flag of the Union of Soviet Socialistic Planets. This one has seen better days."
+  components:
+  - type: Sprite
+    state: usspflag_worn
+
+- type: entity
+  parent: Yangel14WallFlagBase
+  id: Yangel14WallFlagNT
+  name: "NanoTrasen Flag"
+  description: "The flag of the NanoTrasen research company."
+  components:
+  - type: Sprite
+    state: ntflag
+
+- type: entity
+  parent: Yangel14WallFlagBase
+  id: Yangel14WallFlagNTWorn
+  name: "Worn NanoTrasen Flag"
+  description: "The flag of the NanoTrasen research company. This one has seen better days."
+  components:
+  - type: Sprite
+    state: ntflag_worn

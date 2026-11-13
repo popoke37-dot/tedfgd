@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "license": "CC-BY-SA-3.0",
+  "copyright": "Made by superman1223, NT symbol from vanila ss14, ussp and mirtan from Victoria14",
+  "size": {
+    "x": 96,
+    "y": 32
+  },
+  "states": [
+    {
+      "name": "ckcflag"
+    },
+    {
+      "name": "ckcflag_worn"
+    },
+    {
+      "name": "cmcflag"
+    },
+    {
+      "name": "cmcflag_worn"
+    },
+    {
+      "name": "mirtanflag"
+    },
+    {
+      "name": "mirtanflag_worn"
+    },
+    {
+      "name": "ntflag"
+    },
+    {
+      "name": "ntflag_worn"
+    },
+    {
+      "name": "uegflag"
+    },
+    {
+      "name": "uegflag_worn"
+    },
+    {
+      "name": "usspflag"
+    },
+    {
+      "name": "usspflag_worn"
+    }
+  ]
+}
