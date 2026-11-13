@@ -29,7 +29,16 @@ internal static class Hud
 
     public static Font Font(string path, int size)
     {
-        return IoCManager.Resolve<IResourceCache>().GetFont(path, size);
+        // Chakra Petch has no Cyrillic glyphs. Keep its Latin styling and fall back
+        // to Noto Sans Display for Russian UI text and player-entered names.
+        var weight = path == Sans ? "Regular" : "Bold";
+        return IoCManager.Resolve<IResourceCache>().GetFont(new[]
+        {
+            path,
+            $"/Fonts/NotoSansDisplay/NotoSansDisplay-{weight}.ttf",
+            $"/Fonts/NotoSans/NotoSansSymbols-{weight}.ttf",
+            "/Fonts/NotoSans/NotoSansSymbols2-Regular.ttf",
+        }, size);
     }
 
     // a line with a soft halo under it, which is what makes it read as light rather than ink
@@ -216,7 +225,12 @@ internal sealed class HudTag : Control
     public Color Fill
     {
         get => _fill;
-        set => _fill = value;
+        set
+        {
+            _fill = value;
+            if (_outline)
+                _label.FontColorOverride = value;
+        }
     }
 
     // secondary info: outlined in the colour, text in the colour, no fill
@@ -383,7 +397,8 @@ internal class HudButton : ContainerButton
 }
 
 // a list row with no chrome: just text. the cursor puts a bracket on it, selection keeps it lit
-internal sealed class HudRow : ContainerButton
+[Virtual]
+internal class HudRow : ContainerButton
 {
     private bool _selected;
 
@@ -518,6 +533,11 @@ internal sealed class HudBar : Control
         VerticalAlignment = VAlignment.Center;
     }
 
+    public float Fill
+    {
+        set => _fill = Math.Clamp(value, 0, 1);
+    }
+
     protected override void Draw(DrawingHandleScreen handle)
     {
         base.Draw(handle);
@@ -563,8 +583,15 @@ internal sealed class HudColumns : Container
     protected override Vector2 ArrangeOverride(Vector2 finalSize)
     {
         var leftWidth = MathF.Max(0, finalSize.X - _rightWidth - Gap);
-        _left.Arrange(UIBox2.FromDimensions(0, 0, leftWidth, _left.DesiredSize.Y));
-        _right.Arrange(UIBox2.FromDimensions(leftWidth + Gap, 0, _rightWidth, _right.DesiredSize.Y));
+        _left.Arrange(UIBox2.FromDimensions(0, 0, leftWidth, ColumnHeight(_left, finalSize.Y)));
+        _right.Arrange(UIBox2.FromDimensions(leftWidth + Gap, 0, _rightWidth, ColumnHeight(_right, finalSize.Y)));
         return finalSize;
+    }
+
+    // a column holding a scroll list desires 0 height, so without the stretch the mark menu's target list
+    // got arranged at 0px and showed nothing
+    private static float ColumnHeight(Control column, float rowHeight)
+    {
+        return column.VerticalExpand ? rowHeight : column.DesiredSize.Y;
     }
 }

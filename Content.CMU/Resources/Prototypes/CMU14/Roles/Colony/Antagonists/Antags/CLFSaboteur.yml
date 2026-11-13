@@ -2,6 +2,8 @@
   id: CLFSaboteur
   prefRoles: [ CLFSaboteurRole ]
   jobBlacklistGroup:
+  - RuMCColonyLeadershipJobs # RuMC edit
+  - RuMCNoColonialAntagsJobs # RuMC edit
   - AllGovforJobs
   - AllOpforJobs
   - AllCLFJobs
@@ -52,6 +54,8 @@
   id: CLFSaboteurRole
   name: cmu-antag-clf-saboteur-name
   setPreference: true
+  blacklistedGamemodes:
+  - DistressSignal
   objective: cmu-antag-clf-saboteur-objective
 
 - type: startingGear

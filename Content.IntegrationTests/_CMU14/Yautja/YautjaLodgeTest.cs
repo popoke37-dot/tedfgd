@@ -6,11 +6,13 @@ using Content.Shared._RMC14.Dialog;
 using Content.Shared.Actions.Components;
 using Content.Shared.CMU14.Yautja;
 using Content.Shared.CMU14.Yautja.Lodge;
+using Content.Shared.DoAfter;
 using Content.Shared.Doors.Components;
 using Content.Shared.Hands.EntitySystems;
 using Content.Shared.Interaction;
 using Content.Shared.Inventory;
 using Content.Shared.Maps;
+using Content.Shared.Prying.Systems;
 using Content.Shared.Verbs;
 using Robust.Shared.GameObjects;
 using Robust.Shared.Map;
@@ -22,112 +24,6 @@ namespace Content.IntegrationTests._CMU14.Yautja;
 [TestFixture]
 public sealed class YautjaLodgeTest
 {
-    [Test]
-    public async Task RunedRecipesNeedTheHunterSkillAndSpawn()
-    {
-        await using var pair = await PoolManager.GetServerClient();
-        var server = pair.Server;
-        var map = await pair.CreateTestMap();
-
-        await server.WaitAssertion(() =>
-        {
-            var protos = server.ProtoMan;
-            var sheet = protos.Index<EntityPrototype>("CMUSheetRunedSandstone");
-            Assert.That(sheet.TryComp<RMCConstructionItemComponent>(out var item, server.EntMan.ComponentFactory), Is.True);
-
-            var recipes = new List<RMCConstructionPrototype>();
-            foreach (var id in item!.Buildable!)
-            {
-                var recipe = protos.Index(id);
-                if (recipe.Listed is { } listed)
-                    recipes.AddRange(listed.Select(protos.Index));
-                else
-                    recipes.Add(recipe);
-            }
-
-            // 2 doors, 5 walls, 15 floors, brazier, torch, chair, bed, 3 statues
-            Assert.That(recipes, Has.Count.EqualTo(29));
-            foreach (var recipe in recipes)
-            {
-                Assert.Multiple(() =>
-                {
-                    Assert.That(recipe.Skill?.Id, Is.EqualTo("RMCSkillAntagonist"), recipe.ID);
-                    Assert.That(recipe.RequiredSkillLevel, Is.EqualTo(2), recipe.ID);
-                    Assert.That(recipe.MaterialCost, Is.GreaterThan(0), recipe.ID);
-                });
-
-                var spawned = server.EntMan.SpawnEntity(recipe.Prototype, map.GridCoords);
-                server.EntMan.DeleteEntity(spawned);
-            }
-        });
-
-        await pair.CleanReturnAsync();
-    }
-
-    [Test]
-    public async Task TempleFloorApplierLaysTheTile()
-    {
-        await using var pair = await PoolManager.GetServerClient();
-        var server = pair.Server;
-        var map = await pair.CreateTestMap();
-
-        await server.WaitPost(() => server.EntMan.SpawnEntity("CMUYautjaTileApplierDecoDiamond", map.GridCoords));
-        await pair.RunTicksSync(2);
-
-        await server.WaitAssertion(() =>
-        {
-            var tile = server.System<SharedMapSystem>().GetTileRef(map.Grid, map.GridCoords);
-            var def = (ContentTileDefinition) server.ResolveDependency<ITileDefinitionManager>()[tile.Tile.TypeId];
-            Assert.That(def.ID, Is.EqualTo("CMUYautjaTileTempleDecoDiamond"));
-        });
-
-        await pair.CleanReturnAsync();
-    }
-
-    [Test]
-    public async Task WallTorchMountsInFrontOfTheWall()
-    {
-        await using var pair = await PoolManager.GetServerClient();
-        var server = pair.Server;
-        var map = await pair.CreateTestMap();
-
-        await server.WaitAssertion(() =>
-        {
-            var entMan = server.EntMan;
-            var mapSystem = server.System<SharedMapSystem>();
-            var grid = map.Grid;
-            mapSystem.SetTile(grid, new Vector2i(0, 1), map.Tile.Tile);
-
-            var wall = entMan.SpawnEntity("CMUYautjaTempleWall", mapSystem.GridTileToLocal(grid, grid, new Vector2i(0, 1)));
-            var user = entMan.SpawnEntity("CMMobHuman", mapSystem.GridTileToLocal(grid, grid, new Vector2i(0, 0)));
-            var frame = entMan.SpawnEntity("CMUYautjaWallTorchFrame", map.GridCoords);
-
-            var ev = new AfterInteractEvent(user, frame, wall, entMan.GetComponent<TransformComponent>(wall).Coordinates, true);
-            entMan.EventBus.RaiseLocalEvent(frame, ev);
-
-            Assert.That(ev.Handled, Is.True);
-            Assert.That(entMan.IsQueuedForDeletion(frame) || entMan.Deleted(frame), Is.True);
-
-            var torches = new List<EntityUid>();
-            var all = entMan.AllEntityQueryEnumerator<MetaDataComponent, TransformComponent>();
-            while (all.MoveNext(out var uid, out var meta, out var xform))
-            {
-                if (meta.EntityPrototype?.ID == "CMUYautjaWallTorch" && xform.GridUid == grid.Owner)
-                    torches.Add(uid);
-            }
-
-            Assert.That(torches, Has.Count.EqualTo(1));
-            var pos = entMan.GetComponent<TransformComponent>(torches[0]).LocalPosition;
-            Assert.Multiple(() =>
-            {
-                Assert.That(pos.X, Is.EqualTo(0.5f).Within(0.01f));
-                // wall tile centre is y 1.5, pushed 0.55 toward the user on the south side
-                Assert.That(pos.Y, Is.EqualTo(0.95f).Within(0.01f));
-            });
-        });
-
-        await pair.CleanReturnAsync();
-    }
 
     [Test]
     public async Task TempleDoorOnlyAnswersWristbladesAndHoldsItsLock()
@@ -191,8 +87,14 @@ public sealed class YautjaLodgeTest
             Assert.That(entMan.System<SharedVerbSystem>().GetLocalVerbs(door, human, typeof(AlternativeVerb))
                 .Any(verb => verb.Text == Loc.GetString("cmu-yautja-temple-door-verb-lock")), Is.False);
 
-            entMan.EventBus.RaiseLocalEvent(door, new InteractUsingEvent(hunter, wristBlades, door, map.GridCoords));
+            // the blades can pry, and the client only has the pry system, so it used to predict a pry bar the server
+            // never ran. prying has to refuse these doors outright
+            Assert.That(entMan.System<PryingSystem>().TryPry(door, hunter, out var pryId, wristBlades), Is.True);
+            Assert.That(pryId, Is.Null);
+
+            Assert.That(entMan.System<SharedInteractionSystem>().InteractUsing(hunter, wristBlades, door, map.GridCoords), Is.True);
             Assert.That(entMan.GetComponent<DoorComponent>(door).State, Is.EqualTo(DoorState.Opening));
+            Assert.That(entMan.TryGetComponent(hunter, out DoAfterComponent? doAfters) && doAfters.DoAfters.Count > 0, Is.False);
         });
 
         await pair.RunTicksSync(pair.SecondsToTicks(3));

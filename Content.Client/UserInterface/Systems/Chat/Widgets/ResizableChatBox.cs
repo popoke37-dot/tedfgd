@@ -34,6 +34,11 @@ public sealed partial class ResizableChatBox : ChatBox
 
         public Action<Vector2>? OnChatResizeFinish;
 
+        // RuMC edit start
+        public Func<UIBox2, bool, bool>? PlacedResize;
+        private bool _placedResized;
+        // RuMC edit end
+
         protected override void EnteredTree()
         {
             base.EnteredTree();
@@ -77,6 +82,13 @@ public sealed partial class ResizableChatBox : ChatBox
                 // If this is done in MouseDown, Godot won't fire MouseUp as you need focus to receive MouseUps.
                 UserInterfaceManager.KeyboardFocused?.ReleaseKeyboardFocus();
 
+                // RuMC edit start
+                if (_placedResized)
+                {
+                    _placedResized = false;
+                    PlacedResize?.Invoke(Rect, true);
+                }
+                // RuMC edit end
                 OnChatResizeFinish?.Invoke(Size);
             }
 
@@ -156,6 +168,14 @@ public sealed partial class ResizableChatBox : ChatBox
                     left = Math.Min(args.GlobalPosition.X - _dragOffsetTopLeft.X, maxX);
                 }
 
+                // RuMC edit start
+                if (PlacedResize?.Invoke(new UIBox2(left, top, right, bottom), false) == true)
+                {
+                    _placedResized = true;
+                    return;
+                }
+                // RuMC edit end
+
                 ClampSize(left, bottom);
             }
         }
@@ -203,7 +223,7 @@ public sealed partial class ResizableChatBox : ChatBox
             var bottom = desiredBottom ?? Rect.Bottom;
 
             // clamp so it doesn't go too high or low (leave space for alerts UI)
-            var maxBottom = Parent.Size.Y - MinDistanceFromBottom;
+            var maxBottom = Parent.Size.Y - (HudWorkspaceEnabled ? 288 : MinDistanceFromBottom); // CMU14: reserve full-size statuses.
             if (maxBottom <= MinHeight)
             {
                 // we can't fit in our given space (window made awkwardly small), so give up
@@ -212,18 +232,20 @@ public sealed partial class ResizableChatBox : ChatBox
             }
             else
             {
-                bottom = Math.Clamp(bottom, MinHeight, maxBottom);
+                var minBottom = HudWorkspaceEnabled ? MathF.Min(maxBottom, Rect.Top + MinHeight) : MinHeight;
+                bottom = Math.Clamp(bottom, minBottom, maxBottom);
             }
 
             var maxLeft = Parent.Size.X - MinWidth;
-            if (maxLeft <= MinLeft)
+            var minimumLeft = HudWorkspaceEnabled ? MathF.Min(MinLeft, Parent.Size.X * 0.45f) : MinLeft;
+            if (maxLeft <= minimumLeft)
             {
                 // window too narrow, give up and overlap at our max left
                 left = maxLeft;
             }
             else
             {
-                left = Math.Clamp(left, MinLeft, maxLeft);
+                left = Math.Clamp(left, minimumLeft, maxLeft);
             }
 
             LayoutContainer.SetMarginLeft(this, -((right + 10) - left));

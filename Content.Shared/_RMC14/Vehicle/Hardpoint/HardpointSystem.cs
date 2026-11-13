@@ -1472,6 +1472,36 @@ public sealed partial class HardpointSystem : EntitySystem
         return slot.Whitelist == null || _whitelist.IsValid(slot.Whitelist, item);
     }
 
+    // CMU14 method
+    internal bool IsShapeValidHardpoint(EntityUid item, HardpointSlotsComponent slots, HardpointSlot slot)
+    {
+        if (!TryComp<HardpointItemComponent>(item, out var hardpoint))
+            return false;
+
+        if (slots.VehicleFamily is not null)
+        {
+            if (hardpoint.VehicleFamily is not { } vehicleFamily)
+                return false;
+
+            if (vehicleFamily != slots.VehicleFamily.Value)
+                return false;
+        }
+
+        if (slot.SlotType is not null)
+        {
+            if (hardpoint.SlotType is not { } slotType)
+                return false;
+
+            if (slotType != slot.SlotType.Value)
+                return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(slot.HardpointType))
+            return true;
+
+        return string.Equals(hardpoint.HardpointType, slot.HardpointType, StringComparison.OrdinalIgnoreCase);
+    }
+
     private bool HasAllRequired(EntityUid uid, HardpointSlotsComponent component, ItemSlotsComponent? itemSlots = null)
     {
         if (component.Slots.Count == 0)
@@ -1738,6 +1768,7 @@ public sealed partial class HardpointSystem : EntitySystem
 
         UpdateHardpointUi(vehicle);
         HandleHardpointDamageSideEffects(vehicle, hardpoint, amount, integrity, wasFunctional);
+        CMUOnHardpointDamaged(vehicle, hardpoint, previous - integrity.Integrity); // CMU14: VBIED damage trigger
         return true;
     }
 

@@ -82,7 +82,6 @@
     - CMUClaustrophobic
     - CMUFearOfBlood
     - CMUWeakThrow
-    - NoEnglish
     - SlowRunner
     - Anemic
     - Asthmatic
@@ -137,6 +136,7 @@
     ears: AU14HeadsetGovforCommand
     pocket1: AU14StampCO
   inhand:
+    - CMUKitPlatoonCommander
     - AU14TabletGovfor
   storage:
     back:
@@ -149,6 +149,7 @@
     ears: AU14HeadsetOpforCommand
     pocket1: AU14StampCO
   inhand:
+    - CMUKitPlatoonCommander
     - AU14TabletOpfor
   storage:
     back:

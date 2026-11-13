@@ -74,7 +74,8 @@ public sealed class DocumentationPublisherTest
         var controls = new HashSet<string>
         {
             "GuideEntityEmbed", "GuideReagentEmbed", "GuideReagentGroupEmbed", "GuideMicrowaveEmbed",
-            "GuideMicrowaveGroupEmbed", "CMUGuideImage", "CMUGuideZoomImage", "CMUGuideOutfitEmbed",
+            "GuideMicrowaveGroupEmbed", "CMUGuideImage", "CMUGuideZoomImage", "CMUGuideOutfitEmbed", "CMUFobGuideText",
+            "CMUGuideCraftingRecipes",
         };
         var count = 0;
         foreach (var file in files)
@@ -90,7 +91,7 @@ public sealed class DocumentationPublisherTest
             count++;
         }
         Assert.That(count, Is.GreaterThan(65));
-        TestContext.WriteLine($"Read {count} project documents.");
+        TestContext.Out.WriteLine($"Read {count} project documents."); // RuMC edit: NUnit1033
     }
 
     [Test]

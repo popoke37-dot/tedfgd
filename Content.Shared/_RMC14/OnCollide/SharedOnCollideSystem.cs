@@ -150,7 +150,11 @@ public abstract partial class SharedOnCollideSystem : EntitySystem
         if (_hive.FromSameHive(ent.Owner, other))
             return;
 
-        if (ent.Comp.Fire && HasComp<RMCImmuneToFireTileDamageComponent>(other))
+        // CMU14: tile-fire immunity honors its bypass whitelist here too, matching
+        // SharedRMCFlammableSystem.CanFireBypassImmunity (AU-14 PR #2296 scope).
+        if (ent.Comp.Fire &&
+            TryComp<RMCImmuneToFireTileDamageComponent>(other, out var tileFireImmunity) &&
+            !_whitelist.IsWhitelistPass(tileFireImmunity.BypassWhitelist, ent.Owner))
             return;
 
         if (HasComp<UncloakOnHitComponent>(ent.Owner))
@@ -167,7 +171,7 @@ public abstract partial class SharedOnCollideSystem : EntitySystem
                 damage = _xeno.TryApplyXenoAcidDamageMultiplier(other, damage);
             var ignoreResistances = ent.Comp.IgnoreResistances
                 && !(ent.Comp.Fire && HasComp<YautjaComponent>(other));
-            _damageable.TryChangeDamage(other, damage, ignoreResistances, armorPiercing: ent.Comp.ArmorPenetration);
+            _damageable.TryChangeDamage(other, damage, ignoreResistances, origin: ent, armorPiercing: ent.Comp.ArmorPenetration); // CMU14: retain the colliding projectile as damage origin.
             DoEmote(ent, other);
             didEmote = true;
         }
@@ -178,7 +182,7 @@ public abstract partial class SharedOnCollideSystem : EntitySystem
                 damage = _xeno.TryApplyXenoAcidDamageMultiplier(other, damage);
             var ignoreResistances = ent.Comp.IgnoreResistances
                 && !(ent.Comp.Fire && HasComp<YautjaComponent>(other));
-            _damageable.TryChangeDamage(other, damage, ignoreResistances);
+            _damageable.TryChangeDamage(other, damage, ignoreResistances, origin: ent); // CMU14: retain the colliding projectile as damage origin.
         }
 
         // CMU14: the damage above can delete the target outright, and everything after
@@ -232,6 +236,10 @@ public abstract partial class SharedOnCollideSystem : EntitySystem
             return;
 
         ent.Comp.Chain = chain;
+        // CMU14 Begin: propagate non-gibbing damage through collision chains.
+        if (HasComp<Content.Shared.Gibbing.NonGibbingDamageComponent>(chain))
+            EnsureComp<Content.Shared.Gibbing.NonGibbingDamageComponent>(ent);
+        // CMU14 End
         Dirty(ent);
     }
 
@@ -285,6 +293,7 @@ public abstract partial class SharedOnCollideSystem : EntitySystem
         if (comp.Chain is { } chain && TerminatingOrDeleted(chain))
             comp.Chain = null;
     }
+    // CMU14 method: expose collision damage to CAS payload handling.
     public DamageSpecifier GetCollideDamage(Entity<DamageOnCollideComponent> ent)
     {
         return ent.Comp.Damage;

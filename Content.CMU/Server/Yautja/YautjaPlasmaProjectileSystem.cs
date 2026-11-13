@@ -4,9 +4,12 @@ using Content.Shared.Trigger.Systems;
 using System.Numerics;
 using Content.Shared.CMU14.Yautja;
 using Content.Shared._RMC14.Vehicle;
+using Content.Shared._RMC14.Synth;
 using Content.Shared._RMC14.Xenonids;
 using Content.Shared._RMC14.Weapons.Ranged;
 using Content.Shared.Atmos.Components;
+using Content.Shared.Body;
+using Content.Shared.Body.Systems;
 using Content.Shared.Buckle.Components;
 using Content.Shared.Damage;
 using Content.Shared.Doors.Components;
@@ -15,6 +18,7 @@ using Content.Shared.Destructible.Thresholds.Triggers;
 using Content.Shared.FixedPoint;
 using Content.Shared.Humanoid;
 using Content.Shared.Mobs.Components;
+using Content.Shared.Mobs.Systems;
 using Content.Shared.Projectiles;
 using Content.Shared.StatusEffect;
 using Content.Shared.Stunnable;
@@ -32,9 +36,11 @@ public sealed partial class YautjaPlasmaProjectileSystem : EntitySystem
 {
     [Dependency] private DamageableSystem _damage = default!;
     [Dependency] private SharedAudioSystem _audio = default!;
+    [Dependency] private SharedBodySystem _body = default!;
     [Dependency] private EntityLookupSystem _lookup = default!;
     [Dependency] private FlammableSystem _flammable = default!;
     [Dependency] private HardpointSystem _hardpoints = default!;
+    [Dependency] private MobStateSystem _mobState = default!;
     [Dependency] private ExplosionSystem _explosions = default!;
     [Dependency] private StatusEffectQuerySystem _status = default!;
     [Dependency] private SharedStunSystem _stun = default!;
@@ -56,6 +62,7 @@ public sealed partial class YautjaPlasmaProjectileSystem : EntitySystem
         SubscribeLocalEvent<YautjaCasterEradicatorProjectileComponent, ProjectileHitEvent>(OnCasterEradicatorHit);
         SubscribeLocalEvent<YautjaIncendiaryPlasmaProjectileComponent, ProjectileHitEvent>(OnIncendiaryPlasmaHit);
         SubscribeLocalEvent<YautjaPlasmaRifleBoltComponent, ProjectileHitEvent>(OnPlasmaRifleBoltHit);
+        SubscribeLocalEvent<YautjaGibHumansOnHitComponent, ProjectileHitEvent>(OnGibHumansHit);
     }
 
     // CMU14: the ordinary airlock destruction threshold (Resources/Prototypes/_RMC14/Entities/Structures/Doors/
@@ -73,6 +80,18 @@ public sealed partial class YautjaPlasmaProjectileSystem : EntitySystem
             duration += ent.Comp.HumanBonusStunTime;
 
         ApplyCasterStun(args.Target, duration);
+    }
+
+    private void OnGibHumansHit(Entity<YautjaGibHumansOnHitComponent> ent, ref ProjectileHitEvent args)
+    {
+        if (!IsHuman(args.Target) ||
+            HasComp<SynthComponent>(args.Target) ||
+            !TryComp<BodyComponent>(args.Target, out var body))
+        {
+            return;
+        }
+
+        _body.GibBody(args.Target, true, body);
     }
 
     private void OnCasterImmobilizerHit(Entity<YautjaCasterImmobilizerProjectileComponent> ent, ref ProjectileHitEvent args)
@@ -266,6 +285,12 @@ public sealed partial class YautjaPlasmaProjectileSystem : EntitySystem
 
     private void OnPlasmaRifleBoltHit(Entity<YautjaPlasmaRifleBoltComponent> ent, ref ProjectileHitEvent args)
     {
+        if (IsHuman(args.Target) && !HasComp<SynthComponent>(args.Target) && !_mobState.IsDead(args.Target))
+        {
+            ApplyCasterKnockdown(args.Target, ent.Comp.HumanKnockdownTime);
+            return;
+        }
+
         if (!HasComp<XenoComponent>(args.Target) ||
             !TryComp(ent, out ProjectileComponent? projectile) ||
             !projectile.Damage.DamageDict.TryGetValue(ent.Comp.XenoExtraDamageType, out var baseDamage) ||
@@ -289,10 +314,13 @@ public sealed partial class YautjaPlasmaProjectileSystem : EntitySystem
     {
         _audio.PlayPvs(ent.Comp.StunSound, ent.Owner);
 
+        var shooter = CompOrNull<ProjectileComponent>(ent)?.Shooter;
         var coordinates = _transform.GetMapCoordinates(ent);
         foreach (var target in _lookup.GetEntitiesInRange<MobStateComponent>(coordinates, ent.Comp.StunRange))
         {
-            if (HasComp<YautjaAbominationComponent>(target))
+            // CMU: cmss13 stuns the firer too if they're in range, which made point-blank shots lock up
+            // whoever held the caster (worst for a human running a researched bracer, no yautja reduction)
+            if (target == shooter || HasComp<YautjaAbominationComponent>(target))
                 continue;
 
             var duration = ent.Comp.StunTime;

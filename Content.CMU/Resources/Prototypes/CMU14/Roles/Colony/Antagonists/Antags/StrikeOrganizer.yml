@@ -2,6 +2,8 @@
   id: StrikeOrganizer
   prefRoles: [ StrikeOrganizerRole ]
   jobBlacklistGroup:
+  - RuMCColonyLeadershipJobs # RuMC edit
+  - RuMCNoColonialAntagsJobs # RuMC edit
   - AllGovforJobs
   - AllOpforJobs
   - AllCLFJobs
@@ -55,6 +57,8 @@
   id: StrikeOrganizerRole
   name: roles-antag-strikeorganizer-name
   setPreference: true
+  blacklistedGamemodes:
+  - DistressSignal
   objective: roles-antag-strikeorganizer-objective
 
 - type: startingGear

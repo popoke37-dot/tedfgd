@@ -11,6 +11,9 @@
     startingAccessories:
     - AU14PatchUPP
     - AU14PatchUPPNavalInfantry
+  - type: Tag
+    tags:
+    - RMCUniformSPP
 
 - type: entity
   parent: [RMCMarineUniformBase, RMCAlternateFoldableUniformBase]
@@ -51,6 +54,9 @@
     startingAccessories:
     - AU14PatchUPP
     - AU14PatchUPPNavalInfantry
+  - type: Tag
+    tags:
+    - RMCUniformSPP
 
 - type: entity
   parent: [RMCMarineUniformBase, RMCAlternateFoldableUniformBase]
@@ -64,6 +70,9 @@
     startingAccessories:
     - AU14PatchUPP
     - AU14PatchUPPNavalInfantry
+  - type: Tag
+    tags:
+    - RMCUniformSPP
 
 - type: entity
   parent: [RMCMarineUniformBase, RMCAlternateFoldableUniformBase]
@@ -77,6 +86,9 @@
     startingAccessories:
     - AU14PatchUPP
     - AU14PatchUPPNavalInfantry
+  - type: Tag
+    tags:
+    - RMCUniformSPP
 
 - type: entity
   parent: [RMCMarineUniformBase, RMCAlternateFoldableUniformBase]
@@ -116,3 +128,24 @@
   components:
   - type: Sprite
     sprite: CMU14/Clothing/UPP/jumpsuits/uppjoe.rsi
+
+- type: entity
+  parent: [RMCMarineUniformBase, RMCAlternateFoldableUniformBase]
+  id: CMU14NRABDU
+  name: Type-08 Fatigues
+  description: Standard issue uniform for the NRA's infantry. Features a leather belt with several pouches to fit personal items.
+  components:
+  - type: ContainerContainer
+    containers:
+      storagebase: !type:Container
+        ents: []
+        showEnts: False
+        occludes: True
+  - type: Sprite
+    sprite: CMU14/Clothing/UPP/jumpsuits/type08.rsi
+  - type: Storage
+    maxItemSize: Small
+    grid:
+    - 0,0,11,1 # 6 slots
+  - type: FixedItemSizeStorage
+  - type: UniformAccessoryHolder

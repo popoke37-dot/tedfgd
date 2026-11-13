@@ -1,3 +1,4 @@
+using Content.Shared.CMU14;
 using Content.Server.Chat.Managers;
 using Content.Server.GameTicking;
 using Content.Server.Preferences.Managers;
@@ -47,6 +48,7 @@ namespace Content.Server.CMU14.Round
         {
             "ForceOnForce",
             "Insurgency",
+            "ColonyShift", // RuMC edit
         };
 
         private static readonly HashSet<string> PostRoundstartThreatVotePresets = new(StringComparer.OrdinalIgnoreCase)
@@ -128,6 +130,11 @@ namespace Content.Server.CMU14.Round
             set => _state.SelectedOpforShip = value;
         }
 
+        // Grids keyed by prototype id. Round setup tags the voted ship's faction
+        // once the votes have concluded.
+        // a list per map id: both sides can vote the same ship, and one load must not overwrite the other
+        private readonly Dictionary<string, List<IReadOnlyList<EntityUid>>> _loadedGameMapGrids = new();
+
         public void SetOpforShip(string shipId)
         {
             _selectedOpforShip = shipId;
@@ -179,6 +186,7 @@ namespace Content.Server.CMU14.Round
 
             base.Initialize();
             SubscribeLocalEvent<LoadingMapsEvent>(OnLoadingMaps);
+            SubscribeLocalEvent<PostGameMapLoad>(OnPostGameMapLoad);
             _voteSequence.Reset();
             _state.Reset();
             SelectedPlanetMap = null;
@@ -600,7 +608,7 @@ namespace Content.Server.CMU14.Round
             if (!_prototypeManager.TryIndex(threat.RoundStartSpawn, out PartySpawnPrototype? spawn))
                 return false;
 
-            bodyCount = ThreatVoteSelection.CalculateBodyCount(spawn, playerCount, threat.ThreatRatio);
+            bodyCount = ThreatVoteSelection.CalculateBodyCount(spawn, playerCount, threat);
             return true;
         }
 
@@ -994,19 +1002,31 @@ namespace Content.Server.CMU14.Round
                 };
             }
 
-
-
-            if (presetProto.RequiresGovforVote && govforPlatoons.Count > 0 && !ApplyKabanPlatoon(true, StartShipVote))
+            // Respect upstream vote visibility and CMU's Kaban platoon restrictions.
+            List<(string text, object data)> BuildVoteOptions(
+                List<ProtoId<PlatoonPrototype>> platoons,
+                bool isGovfor)
             {
-                var optionsplatoons = new List<(string text, object data)>();
-                foreach (var platoonId in govforPlatoons)
+                var options = new List<(string text, object data)>();
+                foreach (var platoonId in platoons)
                 {
-                    if (!KabanPlatoonAllowed(platoonId, true)) // CMU14
+                    if (!KabanPlatoonAllowed(platoonId, isGovfor)) // CMU14
                         continue;
                     var platoon = _prototypeManager.Index<PlatoonPrototype>(platoonId);
-                    optionsplatoons.Add((Loc.GetString(platoon.Name), platoon));
+                    if (!platoon.ShowInVote || presetProto.ExcludedPlatoons.Contains(platoon.ID))
+                        continue;
+                    options.Add((Loc.GetString(platoon.Name), platoon));
                 }
 
+                return options;
+            }
+
+            var optionsplatoons = BuildVoteOptions(govforPlatoons, true);
+            if (presetProto.RequiresGovforVote &&
+                govforPlatoons.Count > 0 &&
+                !ApplyKabanPlatoon(true, StartShipVote) &&
+                optionsplatoons.Count > 0)
+            {
                 var voteopt = new VoteOptions
                 {
                     Title = Loc.GetString("au14-vote-title-govfor"),
@@ -1058,17 +1078,12 @@ namespace Content.Server.CMU14.Round
                 };
             }
 
-            if (presetProto.RequiresOpforVote && opforPlatoons.Count > 0 && !ApplyKabanPlatoon(false, StartShipVote))
+            optionsplatoons = BuildVoteOptions(opforPlatoons, false);
+            if (presetProto.RequiresOpforVote &&
+                opforPlatoons.Count > 0 &&
+                !ApplyKabanPlatoon(false, StartShipVote) &&
+                optionsplatoons.Count > 0)
             {
-                var optionsplatoons = new List<(string text, object data)>();
-                foreach (var platoonId in opforPlatoons)
-                {
-                    if (!KabanPlatoonAllowed(platoonId, false)) // CMU14
-                        continue;
-                    var platoon = _prototypeManager.Index<PlatoonPrototype>(platoonId);
-                    optionsplatoons.Add((Loc.GetString(platoon.Name), platoon));
-                }
-
                 var voteopt = new VoteOptions
                 {
                     Title = Loc.GetString("au14-vote-title-opfor"),
@@ -1147,9 +1162,10 @@ namespace Content.Server.CMU14.Round
             if (preset is not { RequiresGovforVote: true } || _selectedPlanet is not { GovforInShip: true } planet)
                 return null;
 
-            var platoon = _entityManager.System<PlatoonSpawnRuleSystem>().SelectedGovforPlatoon;
+            var platoons = _entityManager.System<PlatoonSpawnRuleSystem>();
+            var platoon = platoons.SelectedGovforPlatoon;
             if (platoon == null && planet.DefaultGovforPlatoon is { } fallback)
-                _prototypeManager.TryIndex(fallback, out platoon);
+                platoon = platoons.ResolveDefaultPlatoon(fallback, planet.PlatoonsGovfor, preset);
 
             return platoon?.PossibleShips.FirstOrDefault();
         }
@@ -1164,16 +1180,72 @@ namespace Content.Server.CMU14.Round
             if (preset is not { RequiresOpforVote: true } || _selectedPlanet is not { OpforInShip: true } planet)
                 return null;
 
-            var platoon = _entityManager.System<PlatoonSpawnRuleSystem>().SelectedOpforPlatoon;
+            var platoons = _entityManager.System<PlatoonSpawnRuleSystem>();
+            var platoon = platoons.SelectedOpforPlatoon;
             if (platoon == null && planet.DefaultOpforPlatoon is { } fallback)
-                _prototypeManager.TryIndex(fallback, out platoon);
+                platoon = platoons.ResolveDefaultPlatoon(fallback, planet.PlatoonsOpfor, preset);
 
             return platoon?.PossibleShips.FirstOrDefault();
+        }
+
+        private void OnPostGameMapLoad(PostGameMapLoad ev)
+        {
+            if (!_loadedGameMapGrids.TryGetValue(ev.GameMap.ID, out var loads))
+                _loadedGameMapGrids[ev.GameMap.ID] = loads = new();
+
+            // loads from earlier rounds are gone by now
+            loads.RemoveAll(grids => grids.All(grid => TerminatingOrDeleted(grid)));
+            loads.Add(ev.Grids);
+        }
+
+        /// <summary>The grids the given game map loaded with this round, if it has loaded.</summary>
+        public bool TryGetLoadedShipGrids(string gameMapId, out IReadOnlyList<EntityUid> grids)
+        {
+            grids = default!;
+            if (!_loadedGameMapGrids.TryGetValue(gameMapId, out var loads) || loads.Count == 0)
+                return false;
+
+            grids = loads[^1];
+            return true;
+        }
+
+        // the load of this ship that belongs to the given side. with both sides on the same ship the
+        // plain lookup handed govfor the opfor copy, so govfor got tagged onto the opfor decks and spawned there
+        public bool TryGetLoadedShipGrids(string gameMapId, string faction, out IReadOnlyList<EntityUid> grids)
+        {
+            grids = default!;
+            if (!_loadedGameMapGrids.TryGetValue(gameMapId, out var loads) || loads.Count == 0)
+                return false;
+
+            foreach (var load in loads)
+            {
+                foreach (var grid in load)
+                {
+                    if (TryComp<ShipFactionComponent>(grid, out var ship) &&
+                        string.Equals(ship.Faction, faction, StringComparison.OrdinalIgnoreCase))
+                    {
+                        grids = load;
+                        return true;
+                    }
+                }
+            }
+
+            if (loads.Count != 1)
+                return false;
+
+            grids = loads[0];
+            return true;
         }
 
         public bool IsVoteSequenceRunning()
         {
             return _voteSequenceRunning;
+        }
+
+        // the gamemode vote is the first step, the planet and platoon votes after it don't change the preset
+        public bool IsAwaitingPresetVote()
+        {
+            return _voteSequenceRunning && _selectedPreset == null;
         }
 
         public void StartVoteSequence(Action? onFinished = null)

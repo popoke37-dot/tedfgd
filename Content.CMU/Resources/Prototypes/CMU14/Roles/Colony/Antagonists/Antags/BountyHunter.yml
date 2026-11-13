@@ -2,6 +2,8 @@
   id: BountyHunter
   prefRoles: [ BountyHunterRole ]
   jobBlacklistGroup:
+  - RuMCColonyLeadershipJobs # RuMC edit
+  - RuMCNoColonialAntagsJobs # RuMC edit
   - AllGovforJobs
   - AllOpforJobs
   - AllCLFJobs
@@ -57,6 +59,8 @@
   id: BountyHunterRole
   name: cmu-antag-bounty-hunter-name
   setPreference: true
+  blacklistedGamemodes:
+  - DistressSignal
   objective: cmu-antag-bounty-hunter-objective
 
 - type: startingGear

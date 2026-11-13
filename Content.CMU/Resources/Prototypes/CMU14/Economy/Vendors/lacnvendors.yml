@@ -281,8 +281,12 @@
         amount: 1
       - id: RMCPowerCellHigh
         amount: 2
-      - id: RMCCableCoil
-        amount: 15
+      - id: CMUCableThinHVStack
+        amount: 5
+      - id: CMUCableThinMVStack
+        amount: 5
+      - id: CMUCableThinLVStack
+        amount: 5
     - name: Flares and lights
       entries:
       - id: RMCBoxFlashlights
@@ -359,10 +363,10 @@
     - AU14JobOPFOROfficerMedical
     - AU14JobOPFORAuxSupportSynth
     sections:
-    - name: cmu-vendor-section-pressurized-canisters
-      entries:
-      - id: RMCPouchReagentCanister
-        amount: 1
+    # - name: cmu-vendor-section-pressurized-canisters # RuMC edit
+    #   entries:
+    #   - id: RMCPouchReagentCanister
+    #     amount: 1
     - name: Essential Equipment
       takeAll: CMUEssentialEquipment
       entries:
@@ -505,6 +509,14 @@
     sprite: _RMC14/Structures/Machines/VendingMachines/ColMarTech/clothing.rsi
   - type: CMAutomatedVendor
     sections:
+    - name: cmu-vendor-advanced-gunship-crew-hud
+      choices: { CMUPlatoonAirCrewGunshipHUD: 1 }
+      entries:
+      - id: CMUVisorGunshipCrewAdvanced
+    - name: cmu-vendor-basic-gunship-crew-huds
+      entries:
+      - id: CMUVisorGunshipCrew
+        amount: 5
     - name: Body Armor
       choices: { CMUPlatoonAirCrewVest: 1 }
       entries:
@@ -1356,7 +1368,7 @@
         amount: 15
     - name: Radio Equipment
       entries:
-      - id: ANPRC117GRadio
+      - id: RuMCANPRC117GRadioIssuedBare # RuMC edit
         amount: 3
       - id: ANPRCWhipAntenna
         amount: 3
@@ -1446,10 +1458,10 @@
   components:
   - type: CMAutomatedVendor
     sections:
-    - name: cmu-vendor-section-pressurized-canisters
-      entries:
-      - id: RMCPouchReagentCanister
-        amount: 1
+    # - name: cmu-vendor-section-pressurized-canisters # RuMC edit
+    #   entries:
+    #   - id: RMCPouchReagentCanister
+    #     amount: 1
     - name: Essential Equipment
       takeAll: CMUEssentialEquipment
       entries:
@@ -1723,7 +1735,11 @@
         points: 1
     - name: Engineering Supplies
       entries:
-      - id: RMCCableCoil
+      - id: CMUCableThinHVStack
+        points: 1
+      - id: CMUCableThinMVStack
+        points: 1
+      - id: CMUCableThinLVStack
         points: 1
       - id: CMFoldingBarricadesMB6x3
         name: MB-6 folding barricade x3
@@ -1881,7 +1897,11 @@
       - id: CMULACNLogisticsVest
     - name: Engineering Supplies
       entries:
-      - id: RMCCableCoil
+      - id: CMUCableThinHVStack
+        points: 1
+      - id: CMUCableThinMVStack
+        points: 1
+      - id: CMUCableThinLVStack
         points: 1
       - id: AU14MaintenanceJack
         points: 2

@@ -4,9 +4,6 @@ trait-category-language = Languages
 au14-trait-english-language-name = English Language
 au14-trait-english-language-desc = You can speak and understand English. Good day, innit'?
 
-au14-trait-no-english-name = Forget English Language
-au14-trait-no-english-desc = Sho?
-
 au14-trait-no-language-learning-name = Language Impairment
 au14-trait-no-language-learning-desc = You can't pick up new languages during a round. Gives you one more language point to spend on languages you already know.
 
@@ -103,6 +100,9 @@ au14-trait-persian-language-desc = You can speak and understand Persian. Poetry 
 
 au14-trait-romanian-language-name = Romanian Language
 au14-trait-romanian-language-desc = You can speak and understand Romanian.
+
+au14-trait-hebrew-language-name = Hebrew Language
+au14-trait-hebrew-language-desc = You can speak and understand Hebrew. Finally, you can order hummus and falafel with complete confidence.
 
 au14-trait-serbian-language-name = Serbian Language
 au14-trait-serbian-language-desc = You can speak and understand Serbian. Switching between alphabets feels like changing hats.

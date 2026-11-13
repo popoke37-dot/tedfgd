@@ -2,6 +2,8 @@
   id: Vigilante
   prefRoles: [ VigilanteRole ]
   jobBlacklistGroup:
+  - RuMCColonyLeadershipJobs # RuMC edit
+  - RuMCNoColonialAntagsJobs # RuMC edit
   - AllGovforJobs
   - AllOpforJobs
   - AllCLFJobs
@@ -55,6 +57,8 @@
   id: VigilanteRole
   name: cmu-antag-vigilante-name
   setPreference: true
+  blacklistedGamemodes:
+  - DistressSignal
   objective: cmu-antag-vigilante-objective
 
 - type: startingGear

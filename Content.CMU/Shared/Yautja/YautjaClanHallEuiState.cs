@@ -133,8 +133,6 @@ public sealed class YautjaClanHallDossier
     public List<YautjaRank> AssignableRanks = [];
     public bool CanExile;
     public bool CanMove;
-    public bool CanSetAncient;
-    public bool IsAncient;
     public bool CanPurge;
 }
 
@@ -156,9 +154,8 @@ public sealed class YautjaClanHallRoundState
     public int ActiveHunterSlots;
     public int HunterSlots;
     public bool RandomEnabled;
-    public int RandomMinimumRounds;
-    public int RandomMaximumRounds;
-    public int RandomRoundsRemaining;
+    public float InsurgencyChance;
+    public float DistressSignalChance;
 }
 
 [Serializable, NetSerializable]
@@ -194,13 +191,6 @@ public sealed class YautjaClanHallMoveMessage(NetUserId target, int? clanId) : E
 {
     public readonly NetUserId Target = target;
     public readonly int? ClanId = clanId;
-}
-
-[Serializable, NetSerializable]
-public sealed class YautjaClanHallSetAncientMessage(NetUserId target, bool enabled) : EuiMessageBase
-{
-    public readonly NetUserId Target = target;
-    public readonly bool Enabled = enabled;
 }
 
 [Serializable, NetSerializable]
@@ -303,9 +293,9 @@ public sealed class YautjaClanHallRoundSlotsMessage(int slots) : EuiMessageBase
 }
 
 [Serializable, NetSerializable]
-public sealed class YautjaClanHallRoundRandomMessage(bool enabled, int minimumRounds, int maximumRounds) : EuiMessageBase
+public sealed class YautjaClanHallRoundRandomMessage(bool enabled, float insurgencyChance, float distressSignalChance) : EuiMessageBase
 {
     public readonly bool Enabled = enabled;
-    public readonly int MinimumRounds = minimumRounds;
-    public readonly int MaximumRounds = maximumRounds;
+    public readonly float InsurgencyChance = insurgencyChance;
+    public readonly float DistressSignalChance = distressSignalChance;
 }

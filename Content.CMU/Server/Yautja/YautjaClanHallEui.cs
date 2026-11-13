@@ -238,14 +238,6 @@ public sealed partial class YautjaClanHallEui : BaseEui
                 return;
             }
 
-            case YautjaClanHallSetAncientMessage ancient:
-            {
-                var result = await _clans.HallSetAncient(actor, ancient.Target, ancient.Enabled);
-                await AfterMemberChange(result, $"{(ancient.Enabled ? "made" : "removed")} Yautja Ancient {ancient.Target}");
-                Report(result, ancient.Enabled ? "cmu-yautja-hall-done-ancient" : "cmu-yautja-hall-done-unancient");
-                return;
-            }
-
             case YautjaClanHallPurgeMessage purge:
             {
                 var result = await _clans.HallPurge(actor, purge.Target);
@@ -361,7 +353,7 @@ public sealed partial class YautjaClanHallEui : BaseEui
 
             case YautjaClanHallRoundRandomMessage random:
                 RoundAction((YautjaPredatorRoundSystem round, out string status) =>
-                    round.TryConfigureRandom(random.Enabled, random.MinimumRounds, random.MaximumRounds, out status));
+                    round.TryConfigureRandom(random.Enabled, random.InsurgencyChance, random.DistressSignalChance, out status));
                 return true;
 
             default:
@@ -404,7 +396,8 @@ public sealed partial class YautjaClanHallEui : BaseEui
 
     private void RoundAction(RoundTry action)
     {
-        if (!IsHost)
+        // clan staff run the hunt, it shouldn't need a server host
+        if (!IsStaff)
         {
             Report(false, "cmu-yautja-hall-denied-round");
             return;
@@ -618,7 +611,7 @@ public sealed partial class YautjaClanHallEui : BaseEui
                 .ToList();
         }
 
-        if (actor.Host)
+        if (actor.Staff)
             state.Round = RoundState();
 
         return state;
@@ -731,8 +724,6 @@ public sealed partial class YautjaClanHallEui : BaseEui
             AssignableRanks = YautjaClanHallPolicy.AssignableRanks(actor, target).ToList(),
             CanExile = YautjaClanHallPolicy.CanExile(actor, target),
             CanMove = YautjaClanHallPolicy.CanMove(actor, target),
-            CanSetAncient = YautjaClanHallPolicy.CanSetAncient(actor, target),
-            IsAncient = target.Rank == YautjaRank.Ancient,
             CanPurge = YautjaClanHallPolicy.CanPurge(actor, target),
         };
     }
@@ -753,9 +744,8 @@ public sealed partial class YautjaClanHallEui : BaseEui
             ActiveHunterSlots = activeSlots,
             HunterSlots = slots,
             RandomEnabled = round.RandomEnabled,
-            RandomMinimumRounds = round.RandomMinimumRounds,
-            RandomMaximumRounds = round.RandomMaximumRounds,
-            RandomRoundsRemaining = round.RandomRoundsRemaining,
+            InsurgencyChance = round.InsurgencyChance,
+            DistressSignalChance = round.DistressSignalChance,
         };
     }
 }

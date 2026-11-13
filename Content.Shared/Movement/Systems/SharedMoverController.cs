@@ -117,6 +117,9 @@ public abstract partial class SharedMoverController : VirtualController
     protected virtual void OnMoverStartup(Entity<InputMoverComponent> ent, ref ComponentStartup args)
     {
         _blocker.UpdateCanMove(ent, ent.Comp);
+// RuMC edit start - Remove stamina walk
+//         UpdateHumanSprint(ent);
+// RuMC edit end
     }
 
     public override void Shutdown()
@@ -128,6 +131,9 @@ public abstract partial class SharedMoverController : VirtualController
     public override void UpdateAfterSolve(bool prediction, float frameTime)
     {
         base.UpdateAfterSolve(prediction, frameTime);
+// RuMC edit start - Remove stamina walk
+//         SpendHumanSprintStamina(frameTime);
+// RuMC edit end
         UsedMobMovement.Clear();
     }
 
@@ -239,6 +245,9 @@ public abstract partial class SharedMoverController : VirtualController
         // If the body is in air but isn't weightless then it can't move
         var weightless = _gravity.IsWeightless(uid);
         var inAirHelpless = false;
+// RuMC edit start - Remove stamina walk
+//         UpdateHumanSprint(entity, !weightless && physicsComponent.BodyStatus == BodyStatus.OnGround);
+// RuMC edit end
 
         if (physicsComponent.BodyStatus != BodyStatus.OnGround && !CanMoveInAirQuery.HasComponent(uid))
         {
@@ -297,7 +306,15 @@ public abstract partial class SharedMoverController : VirtualController
                     frameTime);
                 tileMovement.WasWeightlessLastTick = weightless;
                 if (didTileMovement)
+// RuMC edit start - Remove stamina walk
+//                 {
+//                     if (mover.SprintOnModifier && mover.Sprinting && DirVecForButtons(mover.HeldMoveButtons) != Vector2.Zero)
+//                         TrackHumanSprint(entity, xform, 1f);
+// RuMC edit end
                     return;
+// RuMC edit start - Remove stamina walk
+//                 }
+// RuMC edit end
             }
             else
             {
@@ -324,6 +341,9 @@ public abstract partial class SharedMoverController : VirtualController
             sprintSpeed *= cmuZeroG.SpeedMultiplier;
             // cmu edit end
 
+// RuMC edit start - Remove stamina walk
+//             wishDir = AssertValidWish(mover, walkSpeed, sprintSpeed, out _);
+// RuMC edit end
             wishDir = AssertValidWish(mover, walkSpeed, sprintSpeed);
 
             var ev = new CanWeightlessMoveEvent(uid);
@@ -397,10 +417,17 @@ public abstract partial class SharedMoverController : VirtualController
             else
                 walkSpeed = sprintSpeed;
 
+// RuMC edit start - Remove stamina walk
+//             wishDir = AssertValidWish(mover, walkSpeed, sprintSpeed, out var sprintInput);
+// RuMC edit end
             wishDir = AssertValidWish(mover, walkSpeed, sprintSpeed);
 
             if (wishDir != Vector2.Zero)
             {
+// RuMC edit start - Remove stamina walk
+//                 if (mover.SprintOnModifier && !mover.SprintBlocked)
+//                     TrackHumanSprint(entity, xform, sprintInput.Length());
+// RuMC edit end
                 friction = moveSpeedComponent?.Friction ?? MovementSpeedModifierComponent.DefaultFriction * _frictionModifier;
                 friction *= tileDef?.MobFriction ?? tileDef?.Friction ?? 1f;
             }
@@ -475,11 +502,15 @@ public abstract partial class SharedMoverController : VirtualController
                 // If we're a relay target then predict the sound for all relays.
                 if (relaySource != null)
                 {
-                    _audio.PlayPredicted(sound, uid, relaySource.Value, audioParams);
+                    // CMU14: bound sources before allocation and filter their original floor.
+                    // _audio.PlayPredicted(sound, uid, relaySource.Value, audioParams);
+                    PlayCMUFootstepSound(sound, uid, relaySource.Value, audioParams);
                 }
                 else
                 {
-                    _audio.PlayPredicted(sound, uid, uid, audioParams);
+                    // CMU14
+                    // _audio.PlayPredicted(sound, uid, uid, audioParams);
+                    PlayCMUFootstepSound(sound, uid, uid, audioParams);
                 }
             }
         }
@@ -663,6 +694,7 @@ public abstract partial class SharedMoverController : VirtualController
             return false;
 
         mobMover.StepSoundDistance -= distanceNeeded;
+        mobMover.FootstepSequence++;
 
         // CMU14: water movement overrides footwear, including silent walking.
         var mobSound = new GetMobFootstepSoundEvent();
@@ -751,8 +783,15 @@ public abstract partial class SharedMoverController : VirtualController
         return sound != null;
     }
 
+// RuMC edit start - Remove stamina walk
+//     private Vector2 AssertValidWish(InputMoverComponent mover, float walkSpeed, float sprintSpeed, out Vector2 sprintDir)
+// RuMC edit end
     private Vector2 AssertValidWish(InputMoverComponent mover, float walkSpeed, float sprintSpeed)
     {
+// RuMC edit start - Remove stamina walk
+//         var (walkDir, sprintInput) = GetVelocityInput(mover);
+//         sprintDir = sprintInput;
+// RuMC edit end
         var (walkDir, sprintDir) = GetVelocityInput(mover);
 
         var total = walkDir * walkSpeed + sprintDir * sprintSpeed;
@@ -873,11 +912,15 @@ public abstract partial class SharedMoverController : VirtualController
                 // If we're a relay target then predict the sound for all relays.
                 if (relayTarget != null)
                 {
-                    _audio.PlayPredicted(sound, uid, relayTarget.Source, audioParams);
+                    // CMU14
+                    // _audio.PlayPredicted(sound, uid, relayTarget.Source, audioParams);
+                    PlayCMUFootstepSound(sound, uid, relayTarget.Source, audioParams);
                 }
                 else
                 {
-                    _audio.PlayPredicted(sound, uid, uid, audioParams);
+                    // CMU14
+                    // _audio.PlayPredicted(sound, uid, uid, audioParams);
+                    PlayCMUFootstepSound(sound, uid, uid, audioParams);
                 }
             }
 

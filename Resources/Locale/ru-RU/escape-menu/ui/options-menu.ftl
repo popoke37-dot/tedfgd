@@ -143,12 +143,18 @@ ui-options-header-text-chat = Чат
 ui-options-header-text-other = Прочий ввод текста
 
 ui-options-hotkey-keymap = Использовать раскладку QWERTY (США)
+# RuMC edit start - Remove stamina walk
+# ui-options-hotkey-toggle-walk = Переключать ходьбу и спринт
+# RuMC edit end
 ui-options-hotkey-toggle-walk = Переключать ходьбу/бег
 
 ui-options-function-move-up = Двигаться вверх
 ui-options-function-move-left = Двигаться влево
 ui-options-function-move-down = Двигаться вниз
 ui-options-function-move-right = Двигаться вправо
+# RuMC edit start - Remove stamina walk
+# ui-options-function-walk = Темп движения (ходьба/спринт)
+# RuMC edit end
 ui-options-function-walk = Идти
 ui-options-function-toggle-knockdown = Переключить ползание
 

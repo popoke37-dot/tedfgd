@@ -2,6 +2,8 @@
   id: Fugitive
   prefRoles: [ FugitiveRole ]
   jobBlacklistGroup:
+  - RuMCColonyLeadershipJobs # RuMC edit
+  - RuMCNoColonialAntagsJobs # RuMC edit
   - AllGovforJobs
   - AllOpforJobs
   - AllCLFJobs
@@ -67,6 +69,8 @@
   id: FugitiveRole
   name: roles-antag-fugitive-name
   setPreference: true
+  blacklistedGamemodes:
+  - DistressSignal
   objective: roles-antag-fugitive-objective
 
 - type: startingGear

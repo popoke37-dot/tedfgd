@@ -18,6 +18,8 @@
   id: WeylandYutaniAgent
   prefRoles: [ WeylandYutaniAgentRole ]
   jobBlacklistGroup:
+  - RuMCColonyLeadershipJobs # RuMC edit
+  - RuMCNoColonialAntagsJobs # RuMC edit
   - AllGovforJobs
   - AllOpforJobs
   - AllCLFJobs
@@ -70,6 +72,8 @@
 - type: antag
   parent: CMUAntagColonyBase
   id: WeylandYutaniAgentRole
+  blacklistedGamemodes:
+  - DistressSignal
   name: cmu-antag-wy-agent-name
   setPreference: true
   objective: cmu-antag-wy-agent-objective
@@ -89,6 +93,8 @@
   id: CorporateSpy
   prefRoles: [ CorporateSpyRole ]
   jobBlacklistGroup:
+  - RuMCColonyLeadershipJobs # RuMC edit
+  - RuMCNoColonialAntagsJobs # RuMC edit
   - AllGovforJobs
   - AllOpforJobs
   - AllCLFJobs
@@ -147,6 +153,8 @@
   id: CorporateSpyRole
   name: roles-antag-spy-name
   setPreference: true
+  blacklistedGamemodes:
+  - DistressSignal
   objective: roles-antag-spy-objective
 
 - type: startingGear

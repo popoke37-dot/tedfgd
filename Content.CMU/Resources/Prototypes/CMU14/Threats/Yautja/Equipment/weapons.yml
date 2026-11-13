@@ -34,6 +34,8 @@
       penetration: None
   - type: DisarmMalus
     malus: 0.2
+  # cmss13 human hits: no skill bonus, sharp + edge penetration. default is sharp and edged
+  - type: YautjaHumanMelee
   - type: Clothing
     slots:
     - suitStorage
@@ -49,9 +51,13 @@
     - Slicing
   - type: Sprite
     state: spike
+  # cmss13 harpoon is SIZE_MEDIUM, which is what lets it ride in the medium-max hunting pouch
   - type: Item
     heldPrefix: harpoon
-    size: Large
+    size: Normal
+  - type: Tag
+    tags:
+    - CMUYautjaHarpoon
   - type: MeleeWeapon
     damage:
       types:
@@ -69,6 +75,9 @@
         Piercing: 30
   - type: ItemThrowRange
     range: 14
+  # without this a ctrl+q throw touches down short of the cursor and slides the rest, and a sliding harpoon goes
+  # straight through whoever it was aimed at. the other throwing weapons all have it
+  - type: LandAtCursor
   - type: RemoveComponents
     components:
     - type: YautjaTechItem
@@ -156,8 +165,8 @@
   - type: Clothing
     clothingVisuals:
       back:
-      - sprite: CMU14/Yautja/pred_gear_custom_worn.rsi
-        state: rending_sword
+      - sprite: CMU14/Yautja/pred_gear_worn.rsi
+        state: clansword_alt
 
 - type: entity
   parent: CMUYautjaClanSword
@@ -173,8 +182,8 @@
   - type: Clothing
     clothingVisuals:
       back:
-      - sprite: CMU14/Yautja/pred_gear_custom_worn.rsi
-        state: piercing_sword
+      - sprite: CMU14/Yautja/pred_gear_worn.rsi
+        state: clansword_alt2
 
 - type: entity
   parent: CMUYautjaClanSword
@@ -222,8 +231,8 @@
   - type: Clothing
     clothingVisuals:
       back:
-      - sprite: CMU14/Yautja/pred_gear_custom_worn.rsi
-        state: dual_war_scythe
+      - sprite: CMU14/Yautja/pred_gear_worn.rsi
+        state: predscythe
     slots:
     - back
     - belt
@@ -244,8 +253,8 @@
   - type: Clothing
     clothingVisuals:
       back:
-      - sprite: CMU14/Yautja/pred_gear_custom_worn.rsi
-        state: double_war_scythe
+      - sprite: CMU14/Yautja/pred_gear_worn.rsi
+        state: predscythe_alt
 
 - type: entity
   parent: CMUYautjaWeaponBase
@@ -300,7 +309,7 @@
     heldPrefix: combistick
     size: Large
   - type: MeleeWeapon
-    attackRate: 0.95
+    attackRate: 1
     damage:
       types:
         Piercing: 10
@@ -470,6 +479,9 @@
       types:
         Piercing: 16
         Slash: 4
+  # sharp but not edged in cm
+  - type: YautjaHumanMelee
+    penetration: 30
   - type: ItemThrowRange
     range: 14
   - type: Clothing
@@ -624,7 +636,7 @@
   - type: MeleeWeapon
     damage:
       types:
-        Piercing: 10
+        Piercing: 15
     animation: WeaponArcThrust
     soundHit:
       path: /Audio/Weapons/bladeslice.ogg
@@ -633,7 +645,7 @@
   - type: IncreaseDamageOnWield
     damage:
       types:
-        Piercing: 35
+        Piercing: 20
   - type: MeleeRequiresWield
   - type: DamageOtherOnHit
     damage:
@@ -685,7 +697,7 @@
     attackRate: 0.71428573
     damage:
       types:
-        Slash: 10
+        Slash: 15
     soundHit:
       path: /Audio/Weapons/bladeslice.ogg
   - type: Wieldable
@@ -693,12 +705,12 @@
   - type: IncreaseDamageOnWield
     damage:
       types:
-        Slash: 35
+        Slash: 30
   - type: MeleeRequiresWield
   - type: DamageOtherOnHit
     damage:
       types:
-        Slash: 10
+        Slash: 15
   - type: YautjaPounceBlock
   - type: Clothing
     clothingVisuals:
@@ -760,7 +772,7 @@
     attackRate: 0.71428573
     damage:
       types:
-        Slash: 5
+        Slash: 10
     soundHit:
       path: /Audio/Weapons/bladeslice.ogg
   - type: Wieldable
@@ -772,7 +784,7 @@
   - type: DamageOtherOnHit
     damage:
       types:
-        Slash: 5
+        Slash: 10
   - type: RemoveComponents
     components:
     - type: YautjaTechItem
@@ -814,13 +826,13 @@
     attackRate: 1.1111112
     damage:
       types:
-        Slash: 30
+        Slash: 35
     soundHit:
       path: /Audio/Weapons/bladeslice.ogg
   - type: DamageOtherOnHit
     damage:
       types:
-        Slash: 5
+        Slash: 10
   - type: RemoveComponents
     components:
     - type: YautjaTechItem
@@ -845,7 +857,7 @@
   - type: MeleeWeapon
     damage:
       types:
-        Blunt: 30
+        Blunt: 35
     soundHit:
       path: /Audio/Weapons/genhit3.ogg
   - type: StaminaDamageOnHit
@@ -854,6 +866,9 @@
     damage:
       types:
         Blunt: 7
+  # blunt, no penetration, still no skill bonus on humans
+  - type: YautjaHumanMelee
+    penetration: 0
   - type: LandAtCursor
   - type: RemoveComponents
     components:
@@ -880,7 +895,7 @@
   - type: MeleeWeapon
     damage:
       types:
-        Slash: 20
+        Slash: 25
     soundHit:
       path: /Audio/Weapons/bladeslice.ogg
   - type: DamageOtherOnHit
@@ -922,7 +937,10 @@
   - type: DamageOtherOnHit
     damage:
       types:
-        Slash: 30
+        Slash: 35
+  # edged but not sharp in cm
+  - type: YautjaHumanMelee
+    penetration: 10
   - type: Tag
     tags:
     - Knife
@@ -1011,11 +1029,6 @@
     count: 12
   - type: Wieldable
     wieldedInhandPrefix: spikelauncher_w
-  - type: WieldableSpeedModifiers
-    base: 0.75
-    light: 0.9
-    medium: 0.85
-    heavy: 0.85
   - type: WieldedCrosshair
     rsi:
       sprite: _RMC14/Interface/MousePointer/rifle_mouse.rsi
@@ -1081,13 +1094,8 @@
     startingCharge: 100
   - type: Wieldable
     wieldedInhandPrefix: plasmarifle_w
+  # cmss13 pred guns keep the default wield delay and have no aim slowdown
   - type: WieldDelay
-    baseDelay: 0.6
-  - type: WieldableSpeedModifiers
-    base: 0.72
-    light: 0.9
-    medium: 0.84
-    heavy: 0.84
   - type: WieldedCrosshair
     rsi:
       sprite: _RMC14/Interface/MousePointer/rifle_mouse.rsi
@@ -1241,23 +1249,26 @@
   - type: AmmoCounter
   - type: Gun
     projectileSpeed: 30
-    fireRate: 1.111111
+    # cmss13 FIRE_DELAY_TIER_9, 2-round burst at FIRE_DELAY_TIER_11
+    fireRate: 2.857143
     minAngle: 10
     maxAngle: 10
     selectedMode: SemiAuto
     availableModes:
     - SemiAuto
     - Burst
-    burstFireRate: 0.909091
+    shotsPerBurst: 2
+    burstFireRate: 4
     soundGunshot:
       path: /Audio/CMU14/Yautja/Weapons/Plasma/pred_plasma_shot.wav
   - type: RMCSelectiveFire
     baseFireModes:
     - SemiAuto
     - Burst
-    scatterWielded: 15
+    scatterWielded: 4
     scatterUnwielded: 10
-    baseFireRate: 1.111111
+    baseFireRate: 2.857143
+    burstFireRateMultiplier: 1.4
   - type: RMCWeaponAccuracy
     accuracyMultiplier: 1.5
     accuracyMultiplierUnwielded: 1.4
@@ -1269,7 +1280,7 @@
     fireModes:
     - proto: CMUYautjaPlasmaRifleBolt
       fireCost: 1
-      fireRate: 1.25
+      fireRate: 2.5
       popupText: plasma carbine will now fire incendiary plasma bolts.
     - proto: CMUYautjaCasterLethalBolt
       fireCost: 2
@@ -1282,12 +1293,6 @@
   - type: Wieldable
     wieldedInhandPrefix: plasmacarbine_w
   - type: WieldDelay
-    baseDelay: 0.6
-  - type: WieldableSpeedModifiers
-    base: 0.72
-    light: 0.9
-    medium: 0.84
-    heavy: 0.84
   - type: WieldedCrosshair
     rsi:
       sprite: _RMC14/Interface/MousePointer/rifle_mouse.rsi
@@ -1389,6 +1394,7 @@
     maxRange: 8
     maxIntensity: 70
     ignoreReagentRange: true
+    allowBlueFire: true # specialist weapon: full CMSS13 tank range and its own intensity cap
   - type: RMCSolutionTransferWhitelist
     popup: rmc-solution-transfer-whitelist-failed-not-reagent-tank
     targetWhitelist:
@@ -1459,7 +1465,7 @@
   - type: Gun
     minAngle: 0
     maxAngle: 0
-    fireRate: 1.428571
+    fireRate: 2
     selectedMode: SemiAuto
     availableModes:
     - SemiAuto
@@ -1512,25 +1518,21 @@
     - Arrow
     - CMUYautjaArrow
   - type: Sprite
-    sprite: Objects/Weapons/Guns/Projectiles/arrows.rsi
+    sprite: CMU14/Yautja/bow.rsi
     layers:
-    - state: tail
-      map: [tail]
-      color: darkred
-    - state: rod
-      map: [rod]
-      color: brown
-    - state: tip
-      map: [tip]
-    - state: solution1
-      map: [mark]
-      visible: false
+    - state: arrow_expl
+      map: [base]
     - sprite: Objects/Weapons/Guns/Projectiles/arrows.rsi
       state: solution1
       map: ["enum.SolutionContainerLayers.Fill"]
       visible: false
   - type: Item
     size: Small
+    # cmss13 arrows have no inhand sprite, keep the plain arrow in hand
+    sprite: Objects/Weapons/Guns/Projectiles/arrows.rsi
+  # the cmss13 arrow points east, the base arrow sprite points north
+  - type: ThrowingAngle
+    angle: 90
   - type: Tool
     qualities: [Slicing]
   - type: MeleeWeapon
@@ -1544,15 +1546,6 @@
     soundEject:
     soundInsert: /Audio/Weapons/Guns/Misc/arrow_nock.ogg
   - type: YautjaArrow
-  - type: GenericVisualizer
-    visuals:
-      enum.YautjaArrowVisuals.State:
-        mark:
-          Inert: {visible: false}
-          Explosive: {visible: true}
-          Emp: {visible: true}
-          Dynamic: {visible: true}
-          Snare: {visible: true}
   - type: Projectile
     damage:
       types:
@@ -1567,6 +1560,14 @@
   id: CMUYautjaExplosiveArrowActive
   name: activated explosive arrow
   components:
+  - type: Sprite
+    layers:
+    - state: arrow_expl_active
+      map: [base]
+    - sprite: Objects/Weapons/Guns/Projectiles/arrows.rsi
+      state: solution1
+      map: ["enum.SolutionContainerLayers.Fill"]
+      visible: false
   - type: CartridgeAmmo
     proto: CMUYautjaExplosiveArrowProjectile
     muzzleFlash:
@@ -1578,6 +1579,14 @@
   parent: CMUYautjaArrowBase
   id: CMUYautjaEmpArrow
   components:
+  - type: Sprite
+    layers:
+    - state: arrow_emp
+      map: [base]
+    - sprite: Objects/Weapons/Guns/Projectiles/arrows.rsi
+      state: solution1
+      map: ["enum.SolutionContainerLayers.Fill"]
+      visible: false
   - type: YautjaArrow
     secondaryWarhead: Emp
 
@@ -1586,6 +1595,14 @@
   id: CMUYautjaEmpArrowActive
   name: activated emp arrow
   components:
+  - type: Sprite
+    layers:
+    - state: arrow_emp_active
+      map: [base]
+    - sprite: Objects/Weapons/Guns/Projectiles/arrows.rsi
+      state: solution1
+      map: ["enum.SolutionContainerLayers.Fill"]
+      visible: false
   - type: CartridgeAmmo
     proto: CMUYautjaEmpArrowProjectile
     muzzleFlash:
@@ -1599,6 +1616,14 @@
   id: CMUYautjaDynamicArrow
   name: inert dynamic arrow
   components:
+  - type: Sprite
+    layers:
+    - state: arrow_inert
+      map: [base]
+    - sprite: Objects/Weapons/Guns/Projectiles/arrows.rsi
+      state: solution1
+      map: ["enum.SolutionContainerLayers.Fill"]
+      visible: false
   - type: YautjaArrow
     dynamic: true
     secondaryWarhead:
@@ -1610,24 +1635,15 @@
   description: A bow launched snare.
   components:
   - type: Sprite
-    sprite: Objects/Weapons/Guns/Projectiles/arrows.rsi
     layers:
-    - state: tail
-      map: [tail]
-      color: darkred
-    - state: rod
-      map: [rod]
-      color: brown
-    - state: tip
-      map: [tip]
-    - state: solution1
-      map: [mark]
-      visible: false
+    - state: arrow_trap
+      map: [base]
     - sprite: CMU14/Yautja/bow.rsi
       state: arrow_trap_active
       map: [snare-trap]
       visible: false
-    - state: solution1
+    - sprite: Objects/Weapons/Guns/Projectiles/arrows.rsi
+      state: solution1
       map: ["enum.SolutionContainerLayers.Fill"]
       visible: false
   - type: CartridgeAmmo
@@ -1640,24 +1656,8 @@
     selectedWarhead: Snare
   - type: GenericVisualizer
     visuals:
-      enum.YautjaArrowVisuals.State:
-        mark:
-          Inert: {visible: false}
-          Explosive: {visible: true}
-          Emp: {visible: true}
-          Dynamic: {visible: true}
-          Snare: {visible: true}
       enum.ToggleableVisuals.Enabled:
-        tail:
-          True: {visible: false}
-          False: {visible: true}
-        rod:
-          True: {visible: false}
-          False: {visible: true}
-        tip:
-          True: {visible: false}
-          False: {visible: true}
-        mark:
+        base:
           True: {visible: false}
           False: {visible: true}
         snare-trap:
@@ -1683,13 +1683,17 @@
     damageCoefficient: 0
     worn: false
   - type: Clothing
+    # cmss13 draws the one worn quiver on the back, belt and suit storage alike
     clothingVisuals:
       belt:
       - sprite: CMU14/Yautja/quiver.rsi
         state: equipped-BELT
+      back:
+      - sprite: CMU14/Yautja/quiver.rsi
+        state: equipped-BELT
       suitStorage:
       - sprite: CMU14/Yautja/quiver.rsi
-        state: icon
+        state: equipped-BELT
     slots:
     - Belt
     - suitStorage
@@ -1740,13 +1744,9 @@
   categories: [HideSpawnMenu]
   components:
   - type: Sprite
-    sprite: Objects/Weapons/Guns/Projectiles/arrows.rsi
+    sprite: CMU14/Yautja/bow.rsi
     layers:
-    - state: tail
-      color: darkred
-    - state: rod
-      color: brown
-    - state: tip
+    - state: projectile_expl
   - type: Projectile
     damage:
       types:
@@ -1763,14 +1763,9 @@
   categories: [HideSpawnMenu]
   components:
   - type: Sprite
-    sprite: Objects/Weapons/Guns/Projectiles/arrows.rsi
+    sprite: CMU14/Yautja/bow.rsi
     layers:
-    - state: tail
-      color: darkred
-    - state: rod
-      color: brown
-    - state: tip
-      color: orange
+    - state: projectile_expl_active
   - type: ExplodeOnTrigger
   - type: Projectile
     damage:
@@ -1798,14 +1793,9 @@
   categories: [HideSpawnMenu]
   components:
   - type: Sprite
-    sprite: Objects/Weapons/Guns/Projectiles/arrows.rsi
+    sprite: CMU14/Yautja/bow.rsi
     layers:
-    - state: tail
-      color: darkred
-    - state: rod
-      color: brown
-    - state: tip
-      color: cyan
+    - state: projectile_emp_active
   - type: Projectile
     damage:
       types:
@@ -1830,14 +1820,9 @@
   categories: [HideSpawnMenu]
   components:
   - type: Sprite
-    sprite: Objects/Weapons/Guns/Projectiles/arrows.rsi
+    sprite: CMU14/Yautja/bow.rsi
     layers:
-    - state: tail
-      color: forestgreen
-    - state: rod
-      color: brown
-    - state: tip
-      color: lawngreen
+    - state: projectile_trap
   - type: StaminaDamageOnCollide
     damage: 80
   - type: Projectile

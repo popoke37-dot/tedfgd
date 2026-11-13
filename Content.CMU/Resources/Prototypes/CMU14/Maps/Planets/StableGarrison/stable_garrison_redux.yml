@@ -2,6 +2,8 @@
   id: CMUPlanetStableGarrisonRedux
   name: Stable Garrison Redux
   components:
+  - type: CMUColonyLanguage
+    defaultLanguage: English
   - type: RMCPlanetMapPrototype
     votename: "Stable Garrison Redux"
     mapId: StableGarrisonRedux
@@ -18,11 +20,10 @@
     - VAIPO
     platoonsOpfor:
     - UPP
-    - BEAR
-    - ProdigySF
+    - BEAR # RuMC: retain the local OPFOR platoon.
     - HAZOPS
     defaultgovfor: USCM
-    defaultopfor: ProdigySF
+    defaultopfor: UPP
     govforinship: false
     opforinship: true
     daycycleenabled: true

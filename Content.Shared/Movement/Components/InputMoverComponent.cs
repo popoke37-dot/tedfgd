@@ -82,7 +82,15 @@ namespace Content.Shared.Movement.Components
         public const float SprintingSoundModifier = 3.5f;
         public const float WalkingSoundModifier = 1.5f;
 
+// RuMC edit start - Remove stamina walk
+//         public bool SprintOnModifier;
+//         public bool SprintBlocked;
+//
+// RuMC edit end
         [ViewVariables]
+// RuMC edit start - Remove stamina walk
+//         public bool Sprinting => !SprintBlocked && SprintOnModifier == ((HeldMoveButtons & MoveButtons.Walk) != 0);
+// RuMC edit end
         public bool Sprinting => (HeldMoveButtons & MoveButtons.Walk) == 0x0;
 
         [ViewVariables(VVAccess.ReadWrite)]
@@ -98,5 +106,9 @@ namespace Content.Shared.Movement.Components
         public Angle RelativeRotation;
         public TimeSpan LerpTarget;
         public bool CanMove;
+// RuMC edit start - Remove stamina walk
+//         public bool SprintOnModifier;
+//         public bool SprintBlocked;
+// RuMC edit end
     }
 }
